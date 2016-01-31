@@ -1,0 +1,1 @@
+This is a C tokenizer program. It takes the user input as a string and parses the string into tokens. It identifies each token as either a word, decimal integer, float, hex, octal, or C operator.
