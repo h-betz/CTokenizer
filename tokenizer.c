@@ -16,7 +16,29 @@ struct TokenizerT_ {
 };
 
 typedef struct TokenizerT_ TokenizerT;
-int ind = 0;
+int ind = 0;                                                        //this will be the index value of our input string as we iterate through it
+
+//Append the string "bad token: " to the token and return the token as a new string
+char * badToken(char * t) {
+    
+    char * bad = "bad token: ";										
+    char * token = (char *) malloc(strlen(t) + strlen(bad));		//allocate memory for new string token
+    strcpy(token, bad);												//copy the string "bad token: " into the new token
+    strcat(token, t);												//append the original token to the end
+    
+    return token;
+    
+}
+
+char * buildZero(char * t) {
+
+	char * zero = "zero: ";
+	char * token = (char *) malloc(strlen(t) + strlen(zero));		//allocate memory for new string token
+	strcpy(token, zero);											//copy the string "zero: " into the new token
+	strcat(token, t);												//append the original token to the end
+
+	return token;
+}
 
 //Append the string "Word: " to the token and return the token as a new string
 char * buildWord(char * t) {
@@ -43,12 +65,34 @@ char * buildDecimal(char * t) {
 //Append the string "float: " to the token and return the token as a new string
 char * buildFloat(char * t) {
     
-    char * floater = "float: ";
-    char * token = (char *) malloc(strlen(t) + strlen(floater));
-    strcpy(token, floater);
-    strcat(token, t);
+    char * floater = "float: ";										
+    char * token = (char *) malloc(strlen(t) + strlen(floater));	//allocate memory for new string token
+    strcpy(token, floater);											//copy the string "float: " into the new token
+    strcat(token, t);												//append the original token to the end
     
     return token;
+}
+
+//Append the string "hex: " to the token and return the token as a new string
+char * buildHex(char * t) {
+    
+    char * hex = "hex: ";
+    char * token = (char *) malloc(strlen(t) + strlen(hex));		//allocate memory for new string token
+    strcpy(token, hex);												//copy the string "hex: " into the new token
+    strcat(token, t);												//append the original token to the end
+    
+    return token;
+}
+
+//Append the string "octal: " to the token and return the token as a new string
+char * buildOct(char * t) {
+
+	char * oct = "octal: ";
+	char * token = (char *) malloc(strlen(t) + strlen(oct));		//allocate memory for new string token
+	strcpy(token, oct);												//copy the string "octal: " into the new token
+	strcat(token, t);												//append the original token to the end
+
+	return token;
 }
 
 //Build the float token
@@ -96,6 +140,59 @@ char * floater(char * t, TokenizerT * tk, int i) {
     
     
     return token;
+}
+
+char * Hex(char * t, TokenizerT * tk, int i) {					//checks if the given char is part of hex
+	
+    char * token = t;											//local string 
+    char c = 0;													//temporary character
+    int length = strlen(tk->input_string);						//get the length of the input string
+    int j = 0;													//our for loop variable
+    
+    for (j = ind; j < length; j++) {							//set j equal to the index of the input string and loop until it reaches the end
+        c = tk->input_string[ind];								//get the character at the index ind in the input string
+        if (isxdigit(c)) {										//if the character c is a hex value
+            token[i] = c;										//add it to the token string
+            i++;												//increment the index of the token string
+        } else {
+            token[i] = '\0';									//otherwise this marks the end of this token so add a null character to the end to make the token a string
+            return token;										//return the new token
+        }
+        ind++;													//increment the index of the input string
+    }
+	
+	return token;
+}
+
+int Oct(char b){					//checks if the given char is part of octal 
+	int r = 0;
+	switch(b){
+		case '0' :
+			r = 1;
+			break;
+		case '1' :
+			r = 1;
+			break;
+		case '2' :
+			r = 1;
+			break;
+		case '3' :
+			r = 1;
+			break;
+		case '4' :
+			r = 1;
+			break;
+		case '5' :
+			r = 1;
+			break;
+		case '6' :
+			r = 1;
+			break;
+		case '7' :
+			r = 1;
+			break;
+	}
+	return r;
 }
 
 
@@ -163,9 +260,10 @@ char *TKGetNextToken( TokenizerT * tk ) {
         return 0;                           //return null if end of the input string
     }
     
-    if (isspace(c)) {                       //return null if character is a space
-        ind++;                              //increment index in input string so we're not stuck in a loop
-        return 0;
+    if (isspace(c)) {                       //goes to next index in input string and calls itself
+        ind++;
+        token = TKGetNextToken(tk);
+        return token;
     } else if (isalpha(c) && i == 0) {      //if the character is a letter and the start of the new token
         token[i] = c;                       //build new token
         ind++;                              //increment to next index in input string
@@ -184,52 +282,90 @@ char *TKGetNextToken( TokenizerT * tk ) {
                 token = buildWord(token);   //append "word: " to the token
                 return token;               //return string
             } else {
-                token = buildWord(token);
-                return token;
+                token = buildWord(token);							//marks the end of the token, so append the word "word: " to front
+                return token;										//return the new string
             }
-            i++;                            //increment token index
-            ind++;                          //increment index of input string
+            i++;													//increment token index
+            ind++;													//increment index of input string
         }
-    } else if (isdigit(c) && c != '0') {    //if character is digit between 1 and 9
-        token[i] = c;                       //begin building new token
-        ind++;                              //increment to next index in input string
-        i++;                                //increment to next index in token
-        int j;                              //loop counter, avoids getting a warning
-        for (j = ind; j < length; j++) {    //loop through input string
-            c = tk->input_string[ind];      //get character at index ind in the input string
-            if (isdigit(c)) {               //check to see if its a decimal digit
-                token[i] = c;               //add to token
-            } else if (isspace(c)) {            //check to see if character is a space
-                ind++;                          //increment index of input string
+    } else if (isdigit(c) && c != '0') {							//if character is digit between 1 and 9
+        token[i] = c;												//begin building new token
+        ind++;														//increment to next index in input string
+        i++;														//increment to next index in token
+        int j;														//loop counter, avoids getting a warning
+        for (j = ind; j < length; j++) {							//loop through input string
+            c = tk->input_string[ind];								//get character at index ind in the input string
+            if (isdigit(c)) {										//check to see if its a decimal digit
+                token[i] = c;										//add to token
+            } else if (isspace(c)) {								//check to see if character is a space
+                ind++;												//increment index of input string
                 token[i] = '\0';
-                token = buildDecimal(token);    //append decimal to beginning of the token
-                return token;                   //return new string
-            } else if (c == '\0') {             //check to see if the character is a null character
-                token[i] = '\0';                //append null character to token to terminate it as a string
-                token = buildDecimal(token);    //get new string token with the words "decimal integer" added
-                return token;                   //return new string
-            } else if (c == '.') {                          //checks to see if this is the start of a float
-                char nextChar = tk->input_string[ind+1];    //checks next character to see if it is a digit
+                token = buildDecimal(token);						//append decimal to beginning of the token
+                return token;										//return new string
+            } else if (c == '\0') {									//check to see if the character is a null character
+                token[i] = '\0';									//append null character to token to terminate it as a string
+                token = buildDecimal(token);						//get new string token with the words "decimal integer" added
+                return token;										//return new string
+            } else if (c == '.') {									//checks to see if this is the start of a float
+                char nextChar = tk->input_string[ind+1];			//checks next character to see if it is a digit
                 if (isdigit(nextChar)) {                    
-                    token[i] = c;                           //if next character is a digit, continue building token
-                    token = floater(token, tk, ++i);        //call the floater function which puts the float together
-                    token = buildFloat(token);              //convert the token to a string with "float:" added to the front
-                    return token;                           //return new string
+                    token[i] = c;									//if next character is a digit, continue building token
+                    token = floater(token, tk, ++i);				//call the floater function which puts the float together
+                    token = buildFloat(token);						//convert the token to a string with "float:" added to the front
+                    return token;									//return new string
                 }
                 
-            } else {                            //decimal integer has reached the end, new token begins
-                token = buildDecimal(token);    //get new string token 
-                return token;                   //return new string
+            } else {												//decimal integer has reached the end, new token begins
+                token = buildDecimal(token);						//get new string token 
+                return token;										//return new string
             }
             
-            i++;                                //increment the index for the token string
-            ind++;                              //increment the index for the input string
+            i++;													//increment the index for the token string
+            ind++;													//increment the index for the input string
         }
     } else if (c == '.' && isdigit(tk->input_string[ind+1])) {      //check to see if this is the start of a float token
         token[i] = c;                                               //if it is, add the . character to the token
         token = floater(token, tk, ++i);                            //call the floater function to build the float token
         token = buildFloat(token);                                  //finish building the string by appending the word float to the front
         return token;                                               //return the token
+    } else if (c == '0') {                                          //if a zero, check to see if it's hex or octal
+        char next = tk->input_string[ind+1];                        //check the next character in the input string
+        char nextNext = tk->input_string[ind+2];                    //look at the character after the next one
+        if (next == 'x' && isxdigit(nextNext)) {                    //start of a hex token if the next character is an x followed by a digit
+            token[i] = c;                                           //add character '0' to the token
+            token[++i] = next;                                      //add the next character, x, to the token
+            ++i;
+            ind += 2;                                               //increment the index of input string to account for the 0 and x being added
+            token = Hex(token, tk, i);                              //build the hex token
+            token = buildHex(token);                                //get the new string with the word "hex: " added to the token
+            return token;                                           //return the new string
+        } else if (Oct(next)) {										//check to see if the next character is octal
+			token[i] = c;											//add the character, c, to the token
+			token[++i] = next;										//add the next character to the next space in the token
+			++i;													//increment index of token
+			ind += 2;												//increment index of input string to account for the two tokens we added from it
+			while(Oct(tk->input_string[ind]) != 0){					//while loop terminates when the char found is not oct
+				token[i] = tk->input_string[ind];					//adds the char to token
+				i++;												//increment index of token
+				ind++;												//increment index of input string
+			}
+			token[i] = '\0';										//add null terminator to the end of the token
+			token = buildOct(token);								//append the word "octal: " to the beginning to the token and return as new string
+			return token;											//return the new token string
+		} else if (next == '\0' || isspace(next)) {					//if the next token is null or a space, then this is just a lonely zero
+            token[i] = c;
+            token[++i] = '\0';
+            token = buildZero(token);
+            ind++;
+            return token;
+        } else if (nextNext == '\0' || isspace(nextNext)) {         //if the string only has 0x followed by nothing else then this is a bad token
+            token[i] = c;                                           //add 0 to the token
+            token[++i] = next;                                      //add x to the token
+            token[++i] = '\0';                                      //add null character to end of the token
+            token = badToken(token);                                //build the final string with "bad token:" added to it
+            ind += 3;                                               //increment index of input string to account for the two characters we added
+            return token;                                           //return the new string
+        }
     } else {
         return 0;
     }    
@@ -250,23 +386,26 @@ int main(int argc, char **argv) {
 
   char **p = NULL;
   char * str = NULL;
-  
+  if (argc > 2 || argc == 1) {                          //checks to see if user input was valid or not
+      printf("Please enter input as a string.\n");
+      return 0;
+  }
   p = argv;
   ++p;
   TokenizerT * t = NULL;
   t = TKCreate(*p);
-  do {
+  do {											//iterate through the input string parsing it into tokens. Iterate until you reach the end of the input string
       
-      str = TKGetNextToken(t);
-      if (str == NULL) {
+      str = TKGetNextToken(t);					//str is a char array that stores the string returned from TKGetNextToken
+      if (str == NULL) {						//if str is null, break from the loop
           break;
       }
-      printf("%s\n", str);
-      free(str);
+      printf("%s\n", str);						//print the token string
+      free(str);								//free the memory allocated for the token string
       
   } while (str != 0 || str[0] != '\0');
   
-  TKDestroy(t);
+  TKDestroy(t);									//free the allocated memory for the tokenizer 
   
 
   return 0;
