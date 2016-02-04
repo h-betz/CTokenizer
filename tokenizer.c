@@ -23,8 +23,12 @@ char * badToken(char * t) {
     
     char * bad = "bad token: ";										
     char * token = (char *) malloc(strlen(t) + strlen(bad));		//allocate memory for new string token
+    if (token == NULL) {                                            //checks to see if malloc was a success
+        printf("Failed to allocate memory. Program closing.\n");
+    }
     strcpy(token, bad);												//copy the string "bad token: " into the new token
     strcat(token, t);												//append the original token to the end
+    free(t);                                                        //free the memory we allocated for the old token
     
     return token;
     
@@ -34,9 +38,13 @@ char * buildZero(char * t) {
 
 	char * zero = "zero: ";
 	char * token = (char *) malloc(strlen(t) + strlen(zero));		//allocate memory for new string token
+    if (token == NULL) {                                            //checks to see if malloc was a success
+        printf("Failed to allocate memory. Program closing.\n");
+    }
 	strcpy(token, zero);											//copy the string "zero: " into the new token
 	strcat(token, t);												//append the original token to the end
-
+    free(t);                                                        //free the memory we allocated for the old token
+    
 	return token;
 }
 
@@ -45,8 +53,12 @@ char * buildWord(char * t) {
     
     char * word = "word: ";
     char * token = (char *) malloc(strlen(t) + strlen(word));       //allocate memory for new string token
+    if (token == NULL) {                                            //checks to see if malloc was a success
+        printf("Failed to allocate memory. Program closing.\n");
+    }
     strcpy(token, word);                                            //copy the string "word" into the new token
     strcat(token, t);                                               //append original token to the end
+    free(t);
     
     return token;
 }
@@ -56,8 +68,12 @@ char * buildDecimal(char * t) {
     
     char * decimal = "decimal integer: ";
     char * token = (char *) malloc(strlen(t) + strlen(decimal));    //allocate memory for new string token
+    if (token == NULL) {                                            //checks to see if malloc was a success
+        printf("Failed to allocate memory. Program closing.\n");
+    }
     strcpy(token, decimal);                                         //copy the string "decimal integer" into the new token
     strcat(token, t);                                               //append original token to the end
+    free(t);                                                        //free the memory we allocated for the old token
     
     return token;
 }
@@ -67,8 +83,12 @@ char * buildFloat(char * t) {
     
     char * floater = "float: ";										
     char * token = (char *) malloc(strlen(t) + strlen(floater));	//allocate memory for new string token
+    if (token == NULL) {                                            //checks to see if malloc was a success
+        printf("Failed to allocate memory. Program closing.\n");
+    }
     strcpy(token, floater);											//copy the string "float: " into the new token
     strcat(token, t);												//append the original token to the end
+    free(t);                                                        //free the memory we allocated for the old token
     
     return token;
 }
@@ -78,8 +98,12 @@ char * buildHex(char * t) {
     
     char * hex = "hex: ";
     char * token = (char *) malloc(strlen(t) + strlen(hex));		//allocate memory for new string token
+    if (token == NULL) {                                            //checks to see if malloc was a success
+        printf("Failed to allocate memory. Program closing.\n");
+    }
     strcpy(token, hex);												//copy the string "hex: " into the new token
     strcat(token, t);												//append the original token to the end
+    free(t);                                                        //free the memory we allocated for the old token
     
     return token;
 }
@@ -89,9 +113,13 @@ char * buildOct(char * t) {
 
 	char * oct = "octal: ";
 	char * token = (char *) malloc(strlen(t) + strlen(oct));		//allocate memory for new string token
+    if (token == NULL) {                                            //checks to see if malloc was a success
+        printf("Failed to allocate memory. Program closing.\n");
+    }
 	strcpy(token, oct);												//copy the string "octal: " into the new token
 	strcat(token, t);												//append the original token to the end
-
+    free(t);                                                        //free the memory we allocated for the old token
+    
 	return token;
 }
 
@@ -118,9 +146,14 @@ char * floater(char * t, TokenizerT * tk, int i) {
                     i++;                                //increment index for token string
                     ind++;                              //increment index for input string
                     token[i] = tempChar;                //assign next character in input string to the token, this would be the + or -
+                } else {
+                    token[i] = '\0';
+                    return token;
                 }
             } else if (isdigit(tempChar)) {             //if there isn't a + or -, check to see if next character is a digit 
                 token[i] = c;                           //if it is, add it to the token
+            } else {                                    //
+                
             }
         } else if (isspace(c)) {                //check to see if its a space
             ind++;                              //increment index so we're not stuck in a loop
@@ -160,7 +193,7 @@ char * Hex(char * t, TokenizerT * tk, int i) {					//checks if the given char is
         }
         ind++;													//increment the index of the input string
     }
-	
+
 	return token;
 }
 
@@ -212,13 +245,16 @@ int Oct(char b){					//checks if the given char is part of octal
 
 TokenizerT *TKCreate( char * ts ) {
     
-    char * str = ts;                                            //store string in a temporary character array                         
-    if (str == NULL) {                                          //if string is null, return null
+    char * str = ts;                                                    //store string in a temporary character array                         
+    if (str == NULL) {                                                  //if string is null, return null
         return NULL;
     } else {
-        TokenizerT * token = malloc(sizeof(TokenizerT));        //allocates space for token
-        token->input_string = str;                              //assigns string to the token
-        return token;                                           //returns token 
+        TokenizerT * token = malloc(sizeof(TokenizerT));                //allocates space for token
+        if (token == NULL) {                                            //checks to see if malloc was a success
+            printf("Failed to allocate memory. Program closing.\n");
+        }
+        token->input_string = str;                                      //assigns string to the token
+        return token;                                                   //returns token 
     }
 
 }
@@ -252,6 +288,11 @@ char *TKGetNextToken( TokenizerT * tk ) {
     char c = tk->input_string[0];
     int length = strlen(tk->input_string) + 1;
     char * token = (char *) malloc(sizeof(char)*length);
+    
+    if (token == NULL) {
+        printf("Failed to allocate memory. Program closing.\n");
+    }
+    
     token[0] = '\0';
     int i = 0;
     
@@ -262,7 +303,7 @@ char *TKGetNextToken( TokenizerT * tk ) {
     
     if (isspace(c)) {                       //goes to next index in input string and calls itself
         ind++;
-        token = TKGetNextToken(tk);
+        token = TKGetNextToken(tk);         //keeps calling itself until it reaches end of string or a character that is not a space
         return token;
     } else if (isalpha(c) && i == 0) {      //if the character is a letter and the start of the new token
         token[i] = c;                       //build new token
@@ -275,6 +316,7 @@ char *TKGetNextToken( TokenizerT * tk ) {
                 token[i] = c;
             } else if (isspace(c)) {        //check to see if it's a space
                 ind++;                      //increment index so we're not stuck in a loop
+                token[i] = '\0';
                 token = buildWord(token);   //apppend "word: " to the token
                 return token;               //return token since this marks the end of the word
             } else if (c == '\0') {         //check to see if its the end of the string
@@ -282,6 +324,7 @@ char *TKGetNextToken( TokenizerT * tk ) {
                 token = buildWord(token);   //append "word: " to the token
                 return token;               //return string
             } else {
+                token[i] = '\0';
                 token = buildWord(token);							//marks the end of the token, so append the word "word: " to front
                 return token;										//return the new string
             }
@@ -316,6 +359,7 @@ char *TKGetNextToken( TokenizerT * tk ) {
                 }
                 
             } else {												//decimal integer has reached the end, new token begins
+                token[i] = '\0';
                 token = buildDecimal(token);						//get new string token 
                 return token;										//return new string
             }
@@ -353,11 +397,11 @@ char *TKGetNextToken( TokenizerT * tk ) {
 			token = buildOct(token);								//append the word "octal: " to the beginning to the token and return as new string
 			return token;											//return the new token string
 		} else if (next == '\0' || isspace(next)) {					//if the next token is null or a space, then this is just a lonely zero
-            token[i] = c;
-            token[++i] = '\0';
-            token = buildZero(token);
-            ind++;
-            return token;
+            token[i] = c;                                           //add character to the token
+            token[++i] = '\0';                                      //append null termination character to the end of the string
+            token = buildDecimal(token);                               //append the word "zero: " to the beginning of the token
+            ind++;                                                  //increment index of input string
+            return token;                                           //return the new string
         } else if (nextNext == '\0' || isspace(nextNext)) {         //if the string only has 0x followed by nothing else then this is a bad token
             token[i] = c;                                           //add 0 to the token
             token[++i] = next;                                      //add x to the token
@@ -365,9 +409,28 @@ char *TKGetNextToken( TokenizerT * tk ) {
             token = badToken(token);                                //build the final string with "bad token:" added to it
             ind += 3;                                               //increment index of input string to account for the two characters we added
             return token;                                           //return the new string
+        } else if (next == '.' && isdigit(nextNext)) {              //consider 0.#### to be a float
+            token[i] = c;
+            token[++i] = next;
+            ind++;
+            token = floater(token, tk, ++i);
+            token = buildFloat(token);
+            return token;         
+        } else if (next == 'x' && !isxdigit(nextNext)){             //0x followed by non hex values is considered it's own token
+            token[i] = c;                                           //add the 0 to the token
+            token[++i] = next;                                      //add the x to the token 
+            ind++;                                                  //increment the index of the input string
+            token[++i] = '\0';                                      //add null terminator to end of token to make it a string
+            token = badToken(token);                                //get the bad token string
+            ind++;                                                  //increment the index of the input string so we are looking at the start of the next token
+            return token;                                           //return the bad token string
         }
-    } else {
-        return 0;
+    } else {                                                        //if all of the above fail, then this is a bad token
+        token[i] = c;                                               //add character to token string
+        token[++i] = '\0';                                          //add null terminator to token
+        token = badToken(token);                                    //get the bad token string
+        ind++;                                                      //increment the index of our input string to the next spot in our input string
+        return token;                                               //return the bad token
     }    
     
     
@@ -395,7 +458,7 @@ int main(int argc, char **argv) {
   TokenizerT * t = NULL;
   t = TKCreate(*p);
   do {											//iterate through the input string parsing it into tokens. Iterate until you reach the end of the input string
-      
+
       str = TKGetNextToken(t);					//str is a char array that stores the string returned from TKGetNextToken
       if (str == NULL) {						//if str is null, break from the loop
           break;
