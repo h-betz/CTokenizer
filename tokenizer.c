@@ -152,15 +152,19 @@ char * floater(char * t, TokenizerT * tk, int i) {
                 }
             } else if (isdigit(tempChar)) {             //if there isn't a + or -, check to see if next character is a digit 
                 token[i] = c;                           //if it is, add it to the token
-            } else {                                    //
-                
+            } else {
+                token[i] = c;
+                token[++i] = tempChar;
+                token[++i] = '\0';
+                ind += 2;
+                return token;
             }
         } else if (isspace(c)) {                //check to see if its a space
             ind++;                              //increment index so we're not stuck in a loop
             token[i] = '\0';                    //add null terminator to end of token to make it a string
             return token;                       //return token
         } else if (c == '\0') {                 //check to see if this is the end of the input string
-            token[i] = c;                       //add null terminator to end of token to make it a string
+            token[i] = '\0';                       //add null terminator to end of token to make it a string
             return token;                       //return token
         } else {                                //any other result is the start of a new token
             token[i] = '\0';                    //add null terminator to end of token to make it a string
@@ -171,7 +175,7 @@ char * floater(char * t, TokenizerT * tk, int i) {
         i++;                                    //increment index of token string
     }
     
-    
+    token[i] = '\0';
     return token;
 }
 
@@ -193,7 +197,8 @@ char * Hex(char * t, TokenizerT * tk, int i) {					//checks if the given char is
         }
         ind++;													//increment the index of the input string
     }
-
+    
+    token[i] = '\0';
 	return token;
 }
 
@@ -354,8 +359,16 @@ char *TKGetNextToken( TokenizerT * tk ) {
                 if (isdigit(nextChar)) {                    
                     token[i] = c;									//if next character is a digit, continue building token
                     token = floater(token, tk, ++i);				//call the floater function which puts the float together
+                    if (!isdigit(token[strlen(token)-1])) {                     //could have properties of a float but still be a bad token, if the second to last character is not a digit then its not a float
+                        token = badToken(token);                    //build the bad token string
+                        return token;                               //return the bad token string
+                    }
                     token = buildFloat(token);						//convert the token to a string with "float:" added to the front
                     return token;									//return new string
+                } else {
+                    token[i] = '\0';
+                    token = buildDecimal(token);
+                    return token;
                 }
                 
             } else {												//decimal integer has reached the end, new token begins
@@ -370,6 +383,10 @@ char *TKGetNextToken( TokenizerT * tk ) {
     } else if (c == '.' && isdigit(tk->input_string[ind+1])) {      //check to see if this is the start of a float token
         token[i] = c;                                               //if it is, add the . character to the token
         token = floater(token, tk, ++i);                            //call the floater function to build the float token
+        if (!isdigit(token[strlen(token)-1])) {                     //check to see if the second to last char is a digit
+            token = badToken(token);                                //if it isn't, then this is a bad token
+            return token;                                           //return the bad token
+        }
         token = buildFloat(token);                                  //finish building the string by appending the word float to the front
         return token;                                               //return the token
     } else if (c == '0') {                                          //if a zero, check to see if it's hex or octal
@@ -399,7 +416,7 @@ char *TKGetNextToken( TokenizerT * tk ) {
 		} else if (next == '\0' || isspace(next)) {					//if the next token is null or a space, then this is just a lonely zero
             token[i] = c;                                           //add character to the token
             token[++i] = '\0';                                      //append null termination character to the end of the string
-            token = buildDecimal(token);                               //append the word "zero: " to the beginning of the token
+            token = buildDecimal(token);                            //append the word "zero: " to the beginning of the token
             ind++;                                                  //increment index of input string
             return token;                                           //return the new string
         } else if (nextNext == '\0' || isspace(nextNext)) {         //if the string only has 0x followed by nothing else then this is a bad token
@@ -410,12 +427,16 @@ char *TKGetNextToken( TokenizerT * tk ) {
             ind += 3;                                               //increment index of input string to account for the two characters we added
             return token;                                           //return the new string
         } else if (next == '.' && isdigit(nextNext)) {              //consider 0.#### to be a float
-            token[i] = c;
-            token[++i] = next;
-            ind++;
-            token = floater(token, tk, ++i);
-            token = buildFloat(token);
-            return token;         
+            token[i] = c;                                           //add 0 to the token
+            token[++i] = next;                                      //add . to the token
+            ind++;                                                  //increment index of input string
+            token = floater(token, tk, ++i);                        //start building the float token
+            if (!isdigit(token[strlen(token)-1])) {                 //check to see if second to last char is a digit
+                token = badToken(token);                            //if it isn't then this is a bad token
+                return token;                                       //return the bad token
+            }
+            token = buildFloat(token);                              //otherwise append the word "float: " to the beginning of the token 
+            return token;                                           //return the float token
         } else if (next == 'x' && !isxdigit(nextNext)){             //0x followed by non hex values is considered it's own token
             token[i] = c;                                           //add the 0 to the token
             token[++i] = next;                                      //add the x to the token 
